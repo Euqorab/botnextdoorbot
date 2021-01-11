@@ -129,3 +129,16 @@ dmypy.json
 .pyre/
 
 res/
+bin/res/
+config/
+data/
+libs/
+logs/
+MxLibData/
+plugins/
+scripts/
+config.json
+device.json
+mcl
+mcl.cmd
+mcl.jar

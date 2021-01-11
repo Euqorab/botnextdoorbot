@@ -16,7 +16,7 @@ from mist import config_util as config
 import threading
 
 
-aqiang_id = 986562745
+aqiang_id = 123456
 
 
 class Bot:
@@ -24,8 +24,8 @@ class Bot:
 
     def start(self):
 
-        handler = MsgHandler()
-        # handler.initHandler()
+        message_handler = MsgHandler()
+        # message_handler.initHandler()
 
         loop = asyncio.get_event_loop()
 
@@ -41,42 +41,35 @@ class Bot:
         )
 
         @bcc.receiver("FriendMessage")
-        async def friend_message_listener(app: GraiaMiraiApplication, friend: Friend, message: MessageChain):
-            msg = message.asDisplay()
-            log.i("receive friend message: %s" % msg)
+        async def friend_message_listener(graia_app: GraiaMiraiApplication, friend: Friend, message: MessageChain):
 
-            should_respond, msg_type, msg = handler.handle(msg, friend=friend)
-            log.i("should respond: %s, type: %s, msg %s" % (should_respond, msg_type[1], msg))
-
-            if should_respond:
-                result = False
-                if msg_type[0] == MsgHandler.TYPE_IMG[0]:
-                    result = await app.sendFriendMessage(friend, MessageChain.create([msg]))
-                elif msg_type[0] == MsgHandler.TYPE_MSG[0]:
-                    result = await app.sendFriendMessage(friend, MessageChain.create([Plain(msg)]))
-
-                log.i("send type: %s, result: %s" % (msg_type[1], result))
-
-        @bcc.receiver("GroupMessage")
-        async def group_message_listener(app: GraiaMiraiApplication, group: Group, member: Member, message: MessageChain):
-            msg = message.asDisplay()
-            log.i("receive group message: %s" % msg)
-
-            should_respond, msg_type, msg = handler.handle(msg)
-            log.i("should respond: %s, type: %s, msg %s" % (should_respond, msg_type[1], msg))
-
-            if member.id == aqiang_id:
-                should_respond = False
-
-            log.i("send msg flag: %s" % self.send_msg_flag)
-
-            if self.send_msg_flag and should_respond:
-                result = await app.sendGroupMessage(group, MessageChain.create([msg]))
-
-                log.i("send type: %s, result: %s" % (msg_type[1], result))
+            async def friend_sender(send_msg):
+                result = await graia_app.sendFriendMessage(friend, MessageChain.create([send_msg]))
                 if result:
                     self.set_send_msg_flag(False)
                     threading.Timer(5.0, self.set_send_msg_flag).start()
+
+            msg = message.asDisplay()
+            log.i("receive friend message: %s" % msg)
+            await message_handler.handle(msg, friend_sender, friend=friend)
+
+        @bcc.receiver("GroupMessage")
+        async def group_message_listener(graia_app: GraiaMiraiApplication, group: Group, member: Member, message: MessageChain):
+
+            async def group_sender(send_msg):
+                should_respond = True
+                if member.id == aqiang_id:
+                    should_respond = False
+
+                if should_respond:
+                    result = await graia_app.sendGroupMessage(group, MessageChain.create([send_msg]))
+                    if result:
+                        self.set_send_msg_flag(False)
+                        threading.Timer(5.0, self.set_send_msg_flag).start()
+
+            msg = message.asDisplay()
+            log.i("receive group message: %s" % msg)
+            await message_handler.handle(msg, group_sender)
 
         app.launch_blocking()
 

@@ -1,3 +1,3 @@
 # coding=utf-8
 
-__all__ = ['img.py']
+__all__ = ['img']
