@@ -26,6 +26,6 @@ class MsgHandler:
 
         for cmd in EroImage.cmd:
             if re.search(cmd, msg):
-                img = EroImage().getRandImg()
+                img = EroImage().get_rand_img()
                 log.i("img: %s" % img)
                 await sender(img)
