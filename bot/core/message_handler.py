@@ -10,10 +10,6 @@ import re
 
 
 class MsgHandler:
-    TYPE_NONE = [0, "none"]
-    TYPE_MSG = [1, "msg"]
-    TYPE_IMG = [2, "img"]
-
     def __init__(self):
         # todo: init corpus file
         return
