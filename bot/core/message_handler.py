@@ -1,7 +1,5 @@
 # coding=utf-8
 
-from graia.application.message.elements.internal import Plain
-
 from mist import logger as log
 from command.img import EroImage
 from command.application import Arknights
@@ -10,6 +8,10 @@ import re
 
 
 class MsgHandler:
+    corpus = []
+    groups_cache = []
+
+
     def __init__(self):
         # todo: init corpus file
         return
@@ -25,3 +27,5 @@ class MsgHandler:
                 img = EroImage().get_rand_img()
                 log.i("img: %s" % img)
                 await sender(img)
+
+
